@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DMM Strateji Belgesi Anketi</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+    header { background-color: #001f3f; color: white; padding: 20px 10px; text-align: center; }
+    .logo { max-height: 80px; margin-bottom: 10px; }
+    main { padding: 30px; max-width: 900px; margin: 30px auto; background-color: #fff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); border-radius: 12px; }
+    h2 { color: #001f3f; }
+    label { display: block; margin-bottom: 20px; font-size: 16px; }
+    textarea, input[type="text"] { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; resize: vertical; }
+    input[type="checkbox"], input[type="radio"] { margin-right: 8px; }
+    button { padding: 12px 24px; font-size: 16px; margin: 15px 10px; background-color: #0074D9; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s ease; }
+    button:hover { background-color: #005fa3; }
+    .page { display: none; }
+    .page.active { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="Unknown.jpeg" alt="DMM Logo" class="logo" />
+    <h1>Dezenformasyonla Mücadele Strateji Belgesi Anketi</h1>
+  </header>
+  <main>
+    <form id="surveyForm">
+      <div id="formPages"></div>
+      <div style="text-align:center; margin-top: 30px;">
+        <button type="button" id="prevBtn" onclick="changePage(-1)">Geri</button>
+        <button type="button" id="nextBtn" onclick="changePage(1)">İleri</button>
+      </div>
+    </form>
+  </main>
+  <script>
+    const questionData = [
+      { type: 'text', label: 'Mesleğiniz' },
+      { type: 'checkbox', label: 'Öğrenim Durumunuz', options: ['İlkokul', 'Ortaokul', 'Lise', 'Lisans', 'Yüksek Lisans', 'Doktora'] },
+      { type: 'radio', label: 'Dezenformasyonun toplum üzerindeki etkilerini hangi düzeyde ciddi bir sorun olarak görüyorsunuz?', options: ['Çok ciddi', 'Ciddi', 'Orta düzeyde', 'Az düzeyde', 'Hiç önemli değil'] },
+      { type: 'checkbox', label: 'Dezenformasyonun toplumda en yaygın olduğu alanlar sizce nelerdir?', options: ['Sağlık', 'Ekonomi', 'Siyaset', 'Eğitim', 'Güvenlik', 'Göç ve mülteciler', 'Diğer'] },
+      { type: 'checkbox', label: 'Sizce dezenformasyon en yaygın hangi iletişim kanalları üzerinden yayılıyor?', options: ['Sosyal medya', 'Geleneksel medya (TV, gazete vb.)', 'Ağızdan ağıza iletişim', 'İnternet siteleri', 'Diğer'] },
+      { type: 'checkbox', label: 'Dezenformasyonun etkisini azaltmak için alınması gereken en önemli önlemler nelerdir?', options: ['Yasal düzenlemeler', 'Medya okuryazarlığı eğitimi', 'Farkındalık kampanyaları', 'Teknolojik çözümler', 'Ulusal ve uluslararası iş birliği', 'Diğer'] },
+      { type: 'radio', label: 'Toplumda dezenformasyona karşı farkındalık düzeyini nasıl değerlendiriyorsunuz?', options: ['Çok yüksek', 'Yüksek', 'Orta', 'Düşük', 'Çok düşük'] },
+      { type: 'radio', label: 'Medya okuryazarlığı eğitiminin yaygınlaştırılmasının toplumsal dayanıklılık üzerindeki etkisi ne olur?', options: ['Çok olumlu', 'Olumlu', 'Nötr', 'Olumsuz', 'Çok olumsuz'] },
+      { type: 'checkbox', label: 'Medya okuryazarlığı eğitimi hangi yaş gruplarına öncelikli olarak verilmelidir?', options: ['Çocuklar (7-12 yaş)', 'Gençler (13-18 yaş)', 'Üniversite öğrencileri', 'Yetişkinler', 'Yaşlı bireyler'] },
+      { type: 'checkbox', label: 'Toplumda dezenformasyona karşı farkındalık oluşturmak için hangi yöntemlerin etkili olacağını düşünüyorsunuz?', options: ['Kamu spotları', 'Sosyal medya kampanyaları', 'Eğitim programları', 'Liderler/kanaat önderleri aracılığıyla bilgilendirme', 'Diğer'] },
+      { type: 'radio', label: 'İş yerinizin kendi görev alanıyla ilgili üretilen dezenformasyona yönelik geliştirdiği bir strateji var mı?', options: ['Evet', 'Hayır'] },
+      { type: 'text', label: 'Eğer evet ise, bu çalışmaları kısaca açıklayabilir misiniz?' },
+      { type: 'text', label: 'Dezenformasyonla mücadele alanında geliştirilmesi gerektiğini düşündüğünüz alanlar nelerdir?' },
+      { type: 'checkbox', label: 'Kurumunuzun dezenformasyonu tespit etmekte kullandığı temel araçlar ve kaynaklar nelerdir?', options: ['Eğitimli insan kaynağı', 'Teknolojik altyapı', 'Yasal düzenlemelerden yararlanma', 'Analiz ve raporlama sistemleri', 'Medya ve halkla ilişkiler birimi', 'Diğer'] },
+      { type: 'text', label: 'Dezenformasyonla ilgili karşılaştığınız en önemli sınamalar nelerdir?' },
+      { type: 'radio', label: 'Kurumunuzun dezenformasyonla mücadelede teknolojik altyapısını nasıl değerlendiriyorsunuz?', options: ['Çok güçlü', 'Güçlü', 'Orta düzeyde', 'Zayıf', 'Çok zayıf'] },
+      { type: 'checkbox', label: 'Aşağıdaki teknolojik araçlardan hangilerinin kurumunuz için öncelikli ihtiyaç olduğunu düşünüyorsunuz?', options: ['Sosyal medya izleme ve analiz yazılımları', 'Yapay zekâ tabanlı dezenformasyon algılama sistemleri', 'Veri görselleştirme araçları', 'Ulusal veri paylaşım platformları', 'Diğer'] },
+      { type: 'text', label: 'Teknolojik kapasitenin artırılması için ne tür çalışmalar yapılması gerektiğini düşünüyorsunuz?' },
+      { type: 'radio', label: 'Kamu kurumları arasında dezenformasyonla mücadelede koordinasyonu nasıl değerlendiriyorsunuz?', options: ['Çok iyi', 'İyi', 'Orta düzeyde', 'Zayıf', 'Çok zayıf'] },
+      { type: 'checkbox', label: 'Kamu kurumları arasındaki iş birliğini artırmak için aşağıdaki önlemlerden hangilerinin etkili olacağını düşünüyorsunuz?', options: ['Düzenli bilgi paylaşım platformları oluşturulması', 'Ortak kriz tatbikatları düzenlenmesi', 'Dezenformasyon odaklı kamu-özel sektör iş birliği projeleri', 'Uluslararası kurumlarla daha etkin iş birliği mekanizmaları', 'Diğer'] },
+      { type: 'text', label: 'Kamu kurumlarının dezenformasyonla mücadele kapasitesini artırmak için öncelikli politika önerileriniz nelerdir?' },
+      { type: 'radio', label: 'Dezenformasyonla mücadeleye yönelik olarak getirilen yasal düzenlemeleri takip ediyor musunuz?', options: ['Evet', 'Hayır'] },
+      { type: 'radio', label: 'Dezenformasyonla mücadelede mevcut yasal düzenlemelerin yeterli olduğunu düşünüyor musunuz?', options: ['Evet', 'Hayır', 'Kısmen'] },
+      { type: 'text', label: 'Yasal düzenlemelerin geliştirilmesi için hangi alanlarda reform yapılması gerektiğini düşünüyorsunuz?' },
+      { type: 'radio', label: 'Kurumunuz dezenformasyonla mücadele alanında diğer devletler veya uluslararası örgütlerin çalışmalarını takip ediyor mu?', options: ['Evet', 'Hayır'] },
+      { type: 'text', label: 'Takip ediyorsa bunların neler olduğunu açıklayabilir misiniz?' },
+      { type: 'text', label: 'Takip ve tespit edilen iyi uygulama örnekleri sizce nelerdir?' },
+      { type: 'text', label: 'Medya okuryazarlığını artırmak için aşağıdaki alanlarda nasıl bir eğitim modeli önerirsiniz?' },
+      { type: 'checkbox', label: 'Toplumda farkındalığı artırmak için en etkili iletişim araçları sizce hangileridir?', options: ['Geleneksel medya (televizyon, gazete)', 'Sosyal medya platformları', 'Eğitim programları', 'Toplum tabanlı etkinlikler', 'Diğer'] },
+      { type: 'radio', label: 'Mevcut yasal düzenlemeler dezenformasyonla mücadelede yeterli mi?', options: ['Evet', 'Hayır'] },
+      { type: 'text', label: 'Yetersiz buluyorsanız, hangi alanlarda iyileştirme yapılmalı?' },
+      { type: 'text', label: 'Dijital platformların dezenformasyonla mücadelede daha etkin rol oynaması için önerileriniz nelerdir?' },
+      { type: 'text', label: 'Teknolojik araçlar ve yapay zekâ çözümlerinin dezenformasyonla mücadelede nasıl kullanılabileceğini düşünüyorsunuz?' },
+      { type: 'text', label: 'Bu ankette yer almayan, ancak strateji belgesi ve eylem planında mutlaka ele alınması gerektiğini düşündüğünüz başka konular var mı?' },
+      { type: 'text', label: 'Strateji belgesi oluşturulurken özel olarak dikkat edilmesi gereken konular veya metodolojiler hakkında önerileriniz nelerdir?' }
+    ];
+
+    const questionsPerPage = 10;
+    let currentPage = 0;
+
+    function createForm() {
+      const pages = Math.ceil(questionData.length / questionsPerPage);
+      const container = document.getElementById('formPages');
+
+      for (let i = 0; i < pages; i++) {
+        const section = document.createElement('section');
+        section.classList.add('page');
+        if (i === 0) section.classList.add('active');
+        section.id = `page${i}`;
+        section.innerHTML = `<img src="Unknown.jpeg" class="logo" /><h2>${i + 1}. Sayfa</h2>`;
+
+        const start = i * questionsPerPage;
+        const end = Math.min(start + questionsPerPage, questionData.length);
+        for (let j = start; j < end; j++) {
+          const q = questionData[j];
+          section.innerHTML += `<label>${q.label}<br />${renderInput(q, j)}</label>`;
+        }
+        container.appendChild(section);
+      }
+
+      const final = document.createElement('section');
+      final.classList.add('page');
+      final.id = 'finalPage';
+      final.innerHTML = `<img src="Unknown.jpeg" class="logo" /><h2>Teşekkürler!</h2><p>Anketi tamamladığınız için teşekkür ederiz.</p>`;
+      container.appendChild(final);
+    }
+
+    function renderInput(q, index) {
+      if (q.type === 'text') {
+        return `<textarea name="q${index}" rows="4" required></textarea>`;
+      } else if (q.type === 'radio') {
+        return q.options.map(opt => `<label><input type="radio" name="q${index}" value="${opt}" required /> ${opt}</label>`).join('<br>');
+      } else if (q.type === 'checkbox') {
+        return q.options.map(opt => `<label><input type="checkbox" name="q${index}" value="${opt}" /> ${opt}</label>`).join('<br>');
+      } else {
+        return '';
+      }
+    }
+
+    function showPage(index) {
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(p => p.classList.remove('active'));
+      if (index >= pages.length - 1) {
+        pages[pages.length - 1].classList.add('active');
+        document.getElementById('prevBtn').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'none';
+      } else {
+        pages[index].classList.add('active');
+        document.getElementById('prevBtn').style.display = index === 0 ? 'none' : 'inline-block';
+        document.getElementById('nextBtn').style.display = 'inline-block';
+      }
+    }
+
+    function changePage(step) {
+      const pages = document.querySelectorAll('.page');
+      currentPage += step;
+      if (currentPage < 0) currentPage = 0;
+      if (currentPage >= pages.length) currentPage = pages.length - 1;
+      showPage(currentPage);
+    }
+
+    createForm();
+    showPage(currentPage);
+  </script>
+</body>
+</html>
+
